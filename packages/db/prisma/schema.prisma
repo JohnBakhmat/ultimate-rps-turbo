@@ -16,6 +16,33 @@ model Post {
     content String
 }
 
+model Match {
+    id       String @id @default(cuid())
+    publicId String @unique
+
+    hostId    String
+    host      User        @relation(fields: [hostId], references: [id], onDelete: Cascade)
+    createdAt DateTime    @default(now())
+    updatedAt DateTime    @updatedAt
+    isPublic  Boolean     @default(false)
+    isStarted Boolean     @default(false)
+    isEnded   Boolean     @default(false)
+    players   UserMatch[]
+}
+
+model UserMatch {
+    id String @id @default(cuid())
+
+    isWinner Boolean @default(false)
+    isHost   Boolean @default(false)
+
+    userId String
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    matchId String
+    match   Match  @relation(fields: [matchId], references: [id], onDelete: Cascade)
+}
+
 // NextAuth.js Models
 // NOTE: When using postgresql, mysql or sqlserver, 
 // uncomment the @db.Text annotations below
@@ -47,13 +74,15 @@ model Session {
 }
 
 model User {
-    id            String    @id @default(cuid())
-    name          String?
-    email         String?   @unique
-    emailVerified DateTime?
-    image         String?
-    accounts      Account[]
-    sessions      Session[]
+    id             String      @id @default(cuid())
+    name           String?
+    email          String?     @unique
+    emailVerified  DateTime?
+    image          String?
+    accounts       Account[]
+    sessions       Session[]
+    matchesCreated Match[]
+    matchesPlayed  UserMatch[]
 }
 
 model VerificationToken {
