@@ -1,0 +1,25 @@
+{
+    "name": "@acme/server",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "dev": "tsx src/index.ts"
+    },
+    "dependencies": {
+        "@acme/api": "*",
+        "@acme/auth": "*",
+        "@acme/db": "*",
+        "@acme/tailwind-config": "*",
+        "fastify": "^4.14.1",
+        "socket.io": "^4.6.1",
+        "superjson": "1.9.1",
+        "zod": "^3.20.6"
+    },
+    "devDependencies": {
+        "@types/node": "^18.0.0",
+        "eslint": "^8.34.0",
+        "eslint-config-acme": "0.0.0",
+        "tsx": "^3.12.3",
+        "typescript": "^4.9.5"
+    }
+}
