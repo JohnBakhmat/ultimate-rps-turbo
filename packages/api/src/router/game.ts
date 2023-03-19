@@ -1,5 +1,4 @@
 import { EventEmitter } from "events";
-import { observable } from "@trpc/server/observable";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
@@ -32,7 +31,7 @@ export const gameRouter = createTRPCRouter({
             isEnded: false,
           },
         })
-      ).map((i) => i.publicId as string);
+      ).map((i) => i.publicId);
 
       const publicId = getRandomRoomId(publicIdsInUse);
       const match = await ctx.prisma.match.create({
