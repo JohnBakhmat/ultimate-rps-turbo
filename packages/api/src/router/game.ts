@@ -139,6 +139,40 @@ export const gameRouter = createTRPCRouter({
       return match;
     }),
 
+  onPlayerJoined: publicProcedure
+    .input(
+      z.object({
+        matchId: z.string(),
+      }),
+    )
+    .subscription(async ({ ctx, input }) => {
+      const { matchId } = input;
+
+      const match = await ctx.prisma.match.findUnique({
+        where: {
+          id: matchId,
+        },
+      });
+
+      if (!match) {
+        throw new Error("Match not found");
+      }
+
+      return observable((subscriber) => {
+        const listener = (id: string) => {
+          if (id === matchId) {
+            subscriber.next({ playerId: id });
+          }
+        };
+
+        ee.on("player-joined", listener);
+
+        return () => {
+          ee.off("player-joined", listener);
+        };
+      });
+    }),
+
   getPlayersByMatchId: protectedProcedure
     .input(
       z.object({
