@@ -2,10 +2,9 @@ import { EventEmitter } from "events";
 import { observable } from "@trpc/server/observable";
 import { z } from "zod";
 
+import { pusherServerClient } from "../pusher";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import { getRandomRoomId } from "../utils";
-
-const ee = new EventEmitter();
 
 export const gameRouter = createTRPCRouter({
   createMatch: publicProcedure
@@ -135,42 +134,12 @@ export const gameRouter = createTRPCRouter({
           },
         });
       }
-      ee.emit("player-joined", matchId);
+
+      await pusherServerClient.trigger(`match-${match.id}`, "player-join", {
+        playerId,
+      });
+
       return match;
-    }),
-
-  onPlayerJoined: publicProcedure
-    .input(
-      z.object({
-        matchId: z.string(),
-      }),
-    )
-    .subscription(async ({ ctx, input }) => {
-      const { matchId } = input;
-
-      const match = await ctx.prisma.match.findUnique({
-        where: {
-          id: matchId,
-        },
-      });
-
-      if (!match) {
-        throw new Error("Match not found");
-      }
-
-      return observable((subscriber) => {
-        const listener = (id: string) => {
-          if (id === matchId) {
-            subscriber.next({ playerId: id });
-          }
-        };
-
-        ee.on("player-joined", listener);
-
-        return () => {
-          ee.off("player-joined", listener);
-        };
-      });
     }),
 
   getPlayersByMatchId: protectedProcedure
