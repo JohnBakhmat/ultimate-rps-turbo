@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  .player-ready {
+    @apply border-4 border-green-500;
+  }
+}

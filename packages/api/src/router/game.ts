@@ -145,7 +145,7 @@ export const gameRouter = createTRPCRouter({
   getPlayersByMatchId: protectedProcedure
     .input(
       z.object({
-        matchId: z.string().uuid(),
+        matchId: z.string(),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -169,6 +169,23 @@ export const gameRouter = createTRPCRouter({
           }
           return playerData;
         }),
+      );
+    }),
+
+  readyUp: protectedProcedure
+    .input(
+      z.object({
+        playerId: z.string(),
+        matchId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      await pusherServerClient.trigger(
+        `match-${input.matchId}`,
+        "player-ready",
+        {
+          playerId: input.playerId,
+        },
       );
     }),
 });

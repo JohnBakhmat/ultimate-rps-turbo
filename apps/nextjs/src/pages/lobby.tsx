@@ -3,12 +3,15 @@ import { type NextPage } from "next";
 import { useSession } from "next-auth/react";
 
 import { api } from "~/utils/api";
+import { pusher } from "~/utils/pusher";
 import { MatchCodeInput } from "~/components/MatchCodeInput";
 import { PlayerCard } from "~/components/PlayerCard";
 
 const Lobby: NextPage = () => {
   const [matchId, setMatchId] = useState<string>("");
   const [publicId, setPublicId] = useState<string>("");
+  const [oponentReady, setOponentReady] = useState(false);
+  const [imReady, setImReady] = useState(false);
 
   const session = useSession();
   const user = session.data?.user;
@@ -18,6 +21,16 @@ const Lobby: NextPage = () => {
 
   const createMatch = api.game.createMatch.useMutation();
   const joinMatch = api.game.joinMatch.useMutation();
+  const players = api.game.getPlayersByMatchId.useQuery({ matchId });
+  const readyUp = api.game.readyUp.useQuery(
+    {
+      matchId,
+      playerId: user?.id!,
+    },
+    {
+      enabled: false,
+    },
+  );
 
   useEffect(() => {
     if (createMatch.isSuccess) {
@@ -32,6 +45,12 @@ const Lobby: NextPage = () => {
     }
   }, [matchId]);
 
+  useEffect(() => {
+    if (imReady && oponentReady) {
+      alert("Starting match");
+    }
+  }, [imReady, oponentReady]);
+
   if (!user) {
     return <div>Something went wrong</div>;
   }
@@ -42,7 +61,7 @@ const Lobby: NextPage = () => {
   };
 
   const handleJoinMatch = () => {
-    refetchMatchId().catch((err) => {
+    refetchMatchId().catch((err: any) => {
       console.error(err);
     });
 
@@ -51,6 +70,20 @@ const Lobby: NextPage = () => {
     }
   };
 
+  const onPlayerJoin = (data: { playerId: string }) => {
+    players.refetch().catch((err: any) => {
+      console.error(err);
+    });
+  };
+
+  const onPlayerReady = (data: { playerId: string }) => {
+    if (data.playerId !== user.id) setOponentReady(true);
+  };
+
+  const channel = pusher.subscribe(`match-${matchId}`);
+  channel.bind("player-join", onPlayerJoin);
+  channel.bind("player-ready", onPlayerReady);
+
   if (createMatch.isError) {
     return (
       <div>
@@ -58,16 +91,19 @@ const Lobby: NextPage = () => {
       </div>
     );
   }
+  const oponents = players.data?.filter((i) => i.id !== user.id);
+
+  const handleReady = async () => {
+    await readyUp.refetch();
+    setImReady(true);
+  };
 
   return (
     <main className="grid min-h-screen w-screen place-items-center bg-black text-white">
-      Error: {JSON.stringify(joinMatch.error, null, 2)}
-      Success: {JSON.stringify(joinMatch.isSuccess, null, 2)}
-      Data: {JSON.stringify(joinMatch.data, null, 2)}
       <div className="flex w-10/12 justify-between gap-10">
-        <PlayerCard name={name} image={image} email={email} />
+        <PlayerCard name={name} image={image} email={email} isReady={imReady} />
         <div className="flex-grow">
-          <div className="grid grid-cols-3 gap-5">
+          <div className="grid h-full grid-cols-3 grid-rows-4 gap-5">
             <button
               className="col-span-2 rounded-xl bg-gradient-to-br from-pink-500
                to-purple-600 py-2 px-4 text-2xl font-bold text-white
@@ -97,9 +133,33 @@ const Lobby: NextPage = () => {
             >
               Join Match
             </button>
+
+            <button
+              className="col-span-3 row-start-4 rounded-xl bg-gradient-to-br
+               from-pink-500 to-purple-600 py-2 px-4 text-2xl font-bold
+                text-white
+                shadow-[0_0_40px_1px_#ec4899] disabled:opacity-50
+                "
+              disabled={!oponents || oponents.length <= 0}
+              onClick={() => void handleReady()}
+            >
+              Ready
+            </button>
           </div>
         </div>
-        <PlayerCard />
+
+        {!oponents?.length ? (
+          <PlayerCard isReady={oponentReady} />
+        ) : (
+          oponents.map((o) => (
+            <PlayerCard
+              name={o.name}
+              image={o.image}
+              key={o.id}
+              isReady={oponentReady}
+            />
+          ))
+        )}
       </div>
     </main>
   );
