@@ -61,7 +61,7 @@ const Lobby: NextPage = () => {
   };
 
   const handleJoinMatch = () => {
-    refetchMatchId().catch((err: any) => {
+    refetchMatchId().catch((err: Error) => {
       console.error(err);
     });
 
@@ -71,7 +71,7 @@ const Lobby: NextPage = () => {
   };
 
   const onPlayerJoin = (data: { playerId: string }) => {
-    players.refetch().catch((err: any) => {
+    players.refetch().catch((err: Error) => {
       console.error(err);
     });
   };
@@ -79,10 +79,14 @@ const Lobby: NextPage = () => {
   const onPlayerReady = (data: { playerId: string }) => {
     if (data.playerId !== user.id) setOponentReady(true);
   };
+  const onPlayerNotReady = (data: { playerId: string }) => {
+    if (data.playerId !== user.id) setOponentReady(false);
+  };
 
   const channel = pusher.subscribe(`match-${matchId}`);
   channel.bind("player-join", onPlayerJoin);
   channel.bind("player-ready", onPlayerReady);
+  channel.bind("player-not-ready", onPlayerNotReady);
 
   if (createMatch.isError) {
     return (

@@ -1,6 +1,8 @@
 import { EventEmitter } from "events";
 import { z } from "zod";
 
+import { type Match } from "@acme/db";
+
 import { pusherServerClient } from "../pusher";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import { getRandomRoomId } from "../utils";
@@ -106,17 +108,7 @@ export const gameRouter = createTRPCRouter({
         },
       });
 
-      if (!match) {
-        throw new Error("Match not found");
-      }
-
-      if (match.isEnded) {
-        throw new Error("Match has ended");
-      }
-
-      if (match.isStarted) {
-        throw new Error("Match has started");
-      }
+      handleMatchErrors(match);
 
       const hasAlreadyJoined = await ctx.prisma.userMatch.findFirst({
         where: {
@@ -129,14 +121,13 @@ export const gameRouter = createTRPCRouter({
         await ctx.prisma.userMatch.create({
           data: {
             userId: playerId,
-            matchId: match.id,
+            matchId: matchId,
           },
         });
       }
 
-      await pusherServerClient.trigger(`match-${match.id}`, "player-join", {
-        playerId,
-      });
+      await playerJoin(matchId, input.playerId);
+      await setPlayerNotReady(matchId, input.playerId);
 
       return match;
     }),
@@ -187,4 +178,41 @@ export const gameRouter = createTRPCRouter({
         },
       );
     }),
+
+  notReady: protectedProcedure
+    .input(
+      z.object({
+        playerId: z.string(),
+        matchId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      await setPlayerNotReady(input.matchId, input.playerId);
+    }),
 });
+
+const setPlayerNotReady = async (matchId: string, playerId: string) => {
+  await pusherServerClient.trigger(`match-${matchId}`, "player-not-ready", {
+    playerId,
+  });
+};
+
+const playerJoin = async (matchId: string, playerId: string) => {
+  await pusherServerClient.trigger(`match-${matchId}`, "player-join", {
+    playerId,
+  });
+};
+
+const handleMatchErrors = (match: Match | null) => {
+  if (!match) {
+    throw new Error("Match not found");
+  }
+
+  if (match.isEnded) {
+    throw new Error("Match has ended");
+  }
+
+  if (match.isStarted) {
+    throw new Error("Match has started");
+  }
+};
