@@ -37,7 +37,7 @@ export const MatchCodeInput = ({
     >
       <input
         disabled={isLocked}
-        className={`absolute inset-1 overflow-hidden rounded-md bg-black px-1 text-center 
+        className={`h-full w-full overflow-hidden rounded-md bg-black px-1 text-center 
           text-2xl font-bold uppercase text-white
           shadow-[0_0_40px_1px_#ec4899] outline-none
           transition-colors duration-100

@@ -100,7 +100,7 @@ const Lobby: NextPage = () => {
 
   return (
     <main className="grid min-h-screen w-screen place-items-center bg-black text-white">
-      <div className="flex w-10/12 justify-between gap-10">
+      <div className="flex w-8/12 flex-col items-center justify-between gap-2 lg:w-8/12 lg:flex-row lg:gap-24">
         <PlayerCard name={name} image={image} email={email} isReady={imReady} />
         <div className="flex-grow">
           <div className="grid h-full grid-cols-3 grid-rows-4 gap-5">
