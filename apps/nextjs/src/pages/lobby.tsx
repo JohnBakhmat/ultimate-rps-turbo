@@ -4,14 +4,18 @@ import { useSession } from "next-auth/react";
 
 import { api } from "~/utils/api";
 import { pusher } from "~/utils/pusher";
+import { LobbyCountdown } from "~/components/LobbyCountdown";
 import { MatchCodeInput } from "~/components/MatchCodeInput";
 import { PlayerCard } from "~/components/PlayerCard";
 
 const Lobby: NextPage = () => {
   const [matchId, setMatchId] = useState<string>("");
   const [publicId, setPublicId] = useState<string>("");
+
   const [oponentReady, setOponentReady] = useState(false);
   const [imReady, setImReady] = useState(false);
+  const [isMatchStarting, setMatchStarting] = useState(false);
+
   const session = useSession();
   const user = session.data?.user;
 
@@ -61,7 +65,7 @@ const Lobby: NextPage = () => {
 
   useEffect(() => {
     if (imReady && oponentReady) {
-      handleMatchStart();
+      setMatchStarting(true);
     }
   }, [imReady, oponentReady]);
 
@@ -125,8 +129,13 @@ const Lobby: NextPage = () => {
   const oponents = players.data?.filter((i) => i.id !== user.id);
 
   return (
-    <main className="grid min-h-screen w-screen place-items-center bg-black text-white">
-      <div className="flex w-8/12 flex-col items-center justify-between gap-2 lg:w-8/12 lg:flex-row lg:gap-24">
+    <main className="grid min-h-screen w-screen grid-rows-4 place-items-center bg-black text-white">
+      <LobbyCountdown
+        isStarting={isMatchStarting}
+        duration={5}
+        onCountdownEnded={handleMatchStart}
+      />
+      <div className="row-span-2 flex w-8/12 flex-col items-center justify-between gap-2 lg:w-8/12 lg:flex-row lg:gap-24">
         <PlayerCard name={name} image={image} email={email} isReady={imReady} />
         <div className="flex-grow">
           <div className="grid h-full grid-cols-3 grid-rows-4 gap-5">
