@@ -12,7 +12,6 @@ const Lobby: NextPage = () => {
   const [publicId, setPublicId] = useState<string>("");
   const [oponentReady, setOponentReady] = useState(false);
   const [imReady, setImReady] = useState(false);
-
   const session = useSession();
   const user = session.data?.user;
 
@@ -32,6 +31,16 @@ const Lobby: NextPage = () => {
     },
   );
 
+  const notReady = api.game.notReady.useQuery(
+    {
+      matchId,
+      playerId: user?.id!,
+    },
+    {
+      enabled: false,
+    },
+  );
+
   useEffect(() => {
     if (createMatch.isSuccess) {
       setMatchId(createMatch.data.matchId);
@@ -42,6 +51,11 @@ const Lobby: NextPage = () => {
   useEffect(() => {
     if (matchId.length > 0 && user?.id) {
       joinMatch.mutate({ matchId, playerId: user.id });
+
+      const channel = pusher.subscribe(`match-${matchId}`);
+      channel.bind("player-join", onPlayerJoin);
+      channel.bind("player-ready", onPlayerReady);
+      channel.bind("player-not-ready", onPlayerNotReady);
     }
   }, [matchId]);
 
@@ -70,7 +84,7 @@ const Lobby: NextPage = () => {
     }
   };
 
-  const onPlayerJoin = (data: { playerId: string }) => {
+  const onPlayerJoin = () => {
     players.refetch().catch((err: Error) => {
       console.error(err);
     });
@@ -83,11 +97,6 @@ const Lobby: NextPage = () => {
     if (data.playerId !== user.id) setOponentReady(false);
   };
 
-  const channel = pusher.subscribe(`match-${matchId}`);
-  channel.bind("player-join", onPlayerJoin);
-  channel.bind("player-ready", onPlayerReady);
-  channel.bind("player-not-ready", onPlayerNotReady);
-
   if (createMatch.isError) {
     return (
       <div>
@@ -98,8 +107,15 @@ const Lobby: NextPage = () => {
   const oponents = players.data?.filter((i) => i.id !== user.id);
 
   const handleReady = async () => {
-    await readyUp.refetch();
-    setImReady(true);
+    const tempReady = imReady;
+
+    setImReady(!imReady);
+
+    if (tempReady) {
+      await notReady.refetch();
+    } else {
+      await readyUp.refetch();
+    }
   };
 
   return (

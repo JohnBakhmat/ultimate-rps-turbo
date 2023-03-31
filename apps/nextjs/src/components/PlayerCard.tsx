@@ -12,9 +12,15 @@ export const PlayerCard = (props: Props) => {
   const name = props.name || "Super Duper Player";
   const ready = props.isReady;
   return (
-    <div className="aspect-square h-full max-w-[300px] rounded-xl bg-gradient-to-br from-pink-500 to-purple-600 p-0.5 shadow-[0_0_40px_1px_#ec4899]">
-      <div className="grid place-items-center gap-4 rounded-xl bg-black p-10">
-        <h1 className="text-3xl">{ready ? "Ready!" : ""}</h1>
+    <div className="aspect-square h-full w-full max-w-[300px] rounded-xl bg-gradient-to-br from-pink-500 to-purple-600 p-0.5 shadow-[0_0_40px_1px_#ec4899]">
+      <div className="grid h-full place-items-center gap-4 rounded-xl bg-black p-10">
+        <h1
+          className={
+            "font-sans text-3xl " + (ready ? "text-white" : "text-transparent")
+          }
+        >
+          Ready!
+        </h1>
 
         <img
           src={image}
