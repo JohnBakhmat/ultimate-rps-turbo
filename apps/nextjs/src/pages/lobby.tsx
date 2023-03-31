@@ -61,7 +61,7 @@ const Lobby: NextPage = () => {
 
   useEffect(() => {
     if (imReady && oponentReady) {
-      alert("Starting match");
+      handleMatchStart();
     }
   }, [imReady, oponentReady]);
 
@@ -74,6 +74,10 @@ const Lobby: NextPage = () => {
     createMatch.mutate({ hostId: id });
   };
 
+  const handleMatchStart = () => {
+    alert("Match is starting");
+  };
+
   const handleJoinMatch = () => {
     refetchMatchId().catch((err: Error) => {
       console.error(err);
@@ -83,28 +87,6 @@ const Lobby: NextPage = () => {
       setMatchId(matchIdFromPublicId.matchId);
     }
   };
-
-  const onPlayerJoin = () => {
-    players.refetch().catch((err: Error) => {
-      console.error(err);
-    });
-  };
-
-  const onPlayerReady = (data: { playerId: string }) => {
-    if (data.playerId !== user.id) setOponentReady(true);
-  };
-  const onPlayerNotReady = (data: { playerId: string }) => {
-    if (data.playerId !== user.id) setOponentReady(false);
-  };
-
-  if (createMatch.isError) {
-    return (
-      <div>
-        Couldn't create match,{JSON.stringify(createMatch.error, null, 2)}
-      </div>
-    );
-  }
-  const oponents = players.data?.filter((i) => i.id !== user.id);
 
   const handleReady = async () => {
     const tempReady = imReady;
@@ -117,6 +99,30 @@ const Lobby: NextPage = () => {
       await readyUp.refetch();
     }
   };
+
+  //Pusher
+  const onPlayerJoin = () => {
+    players.refetch().catch((err: Error) => {
+      console.error(err);
+    });
+  };
+
+  const onPlayerReady = (data: { playerId: string }) => {
+    if (data.playerId !== user.id) setOponentReady(true);
+  };
+  const onPlayerNotReady = (data: { playerId: string }) => {
+    if (data.playerId !== user.id) setOponentReady(false);
+  };
+  //_____
+
+  if (createMatch.isError) {
+    return (
+      <div>
+        Couldn't create match, {JSON.stringify(createMatch.error, null, 2)}
+      </div>
+    );
+  }
+  const oponents = players.data?.filter((i) => i.id !== user.id);
 
   return (
     <main className="grid min-h-screen w-screen place-items-center bg-black text-white">
