@@ -1,10 +1,9 @@
 import { EventEmitter } from "events";
 import { z } from "zod";
 
+import { pusherServerClient } from "../pusher";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import { getRandomRoomId } from "../utils";
-
-const ee = new EventEmitter();
 
 export const gameRouter = createTRPCRouter({
   createMatch: publicProcedure
@@ -70,17 +69,38 @@ export const gameRouter = createTRPCRouter({
       return match;
     }),
 
+  getMatchIdByPublicId: protectedProcedure
+    .input(z.object({ publicId: z.string() }))
+    .output(z.object({ matchId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const match = await ctx.prisma.match.findUnique({
+        where: {
+          publicId: input.publicId,
+        },
+      });
+
+      if (!match) {
+        throw new Error("Match not found");
+      }
+
+      return { matchId: match.id };
+    }),
+
   joinMatch: protectedProcedure
     .input(
       z.object({
-        playerId: z.string().uuid(),
-        matchId: z.string().uuid(),
+        playerId: z.string(),
+        matchId: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       const { playerId, matchId } = input;
 
-      const match = await ctx.prisma.match.findUnique({
+      if (playerId.length === 0 || matchId.length === 0) {
+        return null;
+      }
+
+      const match = await ctx.prisma.match.findFirst({
         where: {
           id: matchId,
         },
@@ -90,20 +110,41 @@ export const gameRouter = createTRPCRouter({
         throw new Error("Match not found");
       }
 
-      await ctx.prisma.userMatch.create({
-        data: {
+      if (match.isEnded) {
+        throw new Error("Match has ended");
+      }
+
+      if (match.isStarted) {
+        throw new Error("Match has started");
+      }
+
+      const hasAlreadyJoined = await ctx.prisma.userMatch.findFirst({
+        where: {
           userId: playerId,
-          matchId: match.id,
+          matchId,
         },
       });
-      ee.emit("player-joined", matchId);
-      return match.id;
+
+      if (!hasAlreadyJoined) {
+        await ctx.prisma.userMatch.create({
+          data: {
+            userId: playerId,
+            matchId: match.id,
+          },
+        });
+      }
+
+      await pusherServerClient.trigger(`match-${match.id}`, "player-join", {
+        playerId,
+      });
+
+      return match;
     }),
 
   getPlayersByMatchId: protectedProcedure
     .input(
       z.object({
-        matchId: z.string().uuid(),
+        matchId: z.string(),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -127,6 +168,23 @@ export const gameRouter = createTRPCRouter({
           }
           return playerData;
         }),
+      );
+    }),
+
+  readyUp: protectedProcedure
+    .input(
+      z.object({
+        playerId: z.string(),
+        matchId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      await pusherServerClient.trigger(
+        `match-${input.matchId}`,
+        "player-ready",
+        {
+          playerId: input.playerId,
+        },
       );
     }),
 });
