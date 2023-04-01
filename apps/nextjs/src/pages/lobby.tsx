@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { type NextPage } from "next";
-import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
+import { signOut, useSession } from "next-auth/react";
 
 import { api } from "~/utils/api";
 import { pusher } from "~/utils/pusher";
@@ -9,6 +10,8 @@ import { MatchCodeInput } from "~/components/MatchCodeInput";
 import { PlayerCard } from "~/components/PlayerCard";
 
 const Lobby: NextPage = () => {
+  const router = useRouter();
+
   const [matchId, setMatchId] = useState<string>("");
   const [publicId, setPublicId] = useState<string>("");
 
@@ -69,6 +72,12 @@ const Lobby: NextPage = () => {
     }
   }, [imReady, oponentReady]);
 
+  useEffect(() => {
+    if (!user) {
+      router.replace("/");
+    }
+  }, [user, router]);
+
   if (!user) {
     return <div>Something went wrong</div>;
   }
@@ -79,7 +88,7 @@ const Lobby: NextPage = () => {
   };
 
   const handleMatchStart = () => {
-    alert("Match is starting");
+    router.push(`match/${matchId}`);
   };
 
   const handleJoinMatch = () => {
@@ -129,74 +138,90 @@ const Lobby: NextPage = () => {
   const oponents = players.data?.filter((i) => i.id !== user.id);
 
   return (
-    <main className="grid min-h-screen w-screen grid-rows-4 place-items-center bg-black text-white">
-      <LobbyCountdown
-        isStarting={isMatchStarting}
-        duration={5}
-        onCountdownEnded={handleMatchStart}
-      />
-      <div className="row-span-2 flex w-8/12 flex-col items-center justify-between gap-2 lg:w-8/12 lg:flex-row lg:gap-24">
-        <PlayerCard name={name} image={image} email={email} isReady={imReady} />
-        <div className="flex-grow">
-          <div className="grid h-full grid-cols-3 grid-rows-4 gap-5">
-            <button
-              className="col-span-2 rounded-xl bg-gradient-to-br from-pink-500
+    <div>
+      <main className="grid min-h-screen w-screen grid-rows-4 place-items-center bg-black text-white">
+        <LobbyCountdown
+          isStarting={isMatchStarting}
+          duration={5}
+          onCountdownEnded={handleMatchStart}
+        />
+        <div className="row-span-2 flex w-8/12 flex-col items-center justify-between gap-2 lg:w-8/12 lg:flex-row lg:gap-24">
+          <PlayerCard
+            name={name}
+            image={image}
+            email={email}
+            isReady={imReady}
+          />
+          <div className="flex-grow">
+            <div className="grid h-full grid-cols-3 grid-rows-4 gap-5">
+              <button
+                className="col-span-2 rounded-xl bg-gradient-to-br from-pink-500
                to-purple-600 py-2 px-4 text-2xl font-bold text-white
                 shadow-[0_0_40px_1px_#ec4899]
                 disabled:opacity-50
                 "
-              disabled={matchId.length > 0}
-              onClick={handleCreateMatch}
-            >
-              CreateMatch
-            </button>
+                disabled={matchId.length > 0}
+                onClick={handleCreateMatch}
+              >
+                CreateMatch
+              </button>
 
-            <MatchCodeInput
-              isLocked={matchId.length > 0}
-              publicId={publicId}
-              setPublicId={setPublicId}
-            />
+              <MatchCodeInput
+                isLocked={matchId.length > 0}
+                publicId={publicId}
+                setPublicId={setPublicId}
+              />
 
-            <button
-              className="col-span-3 rounded-xl bg-gradient-to-br from-pink-500
+              <button
+                className="col-span-3 rounded-xl bg-gradient-to-br from-pink-500
                to-purple-600 py-2 px-4 text-2xl font-bold text-white
                 shadow-[0_0_40px_1px_#ec4899]
                 disabled:opacity-50
                 "
-              disabled={matchId.length > 0}
-              onClick={handleJoinMatch}
-            >
-              Join Match
-            </button>
+                disabled={matchId.length > 0}
+                onClick={handleJoinMatch}
+              >
+                Join Match
+              </button>
 
-            <button
-              className="col-span-3 row-start-4 rounded-xl bg-gradient-to-br
+              <button
+                className="col-span-3 row-start-4 rounded-xl bg-gradient-to-br
                from-pink-500 to-purple-600 py-2 px-4 text-2xl font-bold
                 text-white
                 shadow-[0_0_40px_1px_#ec4899] disabled:opacity-50
                 "
-              disabled={!oponents || oponents.length <= 0}
-              onClick={() => void handleReady()}
-            >
-              Ready
-            </button>
+                disabled={!oponents || oponents.length <= 0}
+                onClick={() => void handleReady()}
+              >
+                Ready
+              </button>
+            </div>
           </div>
-        </div>
 
-        {!oponents?.length ? (
-          <PlayerCard isReady={oponentReady} />
-        ) : (
-          oponents.map((o) => (
-            <PlayerCard
-              name={o.name}
-              image={o.image}
-              key={o.id}
-              isReady={oponentReady}
-            />
-          ))
-        )}
-      </div>
-    </main>
+          {!oponents?.length ? (
+            <PlayerCard isReady={oponentReady} />
+          ) : (
+            oponents.map((o) => (
+              <PlayerCard
+                name={o.name}
+                image={o.image}
+                key={o.id}
+                isReady={oponentReady}
+              />
+            ))
+          )}
+        </div>
+      </main>
+
+      <button
+        className="fixed top-0 left-0 z-20 rounded-xl bg-gradient-to-br
+        from-pink-500 to-purple-600 py-2 px-4 text-lg font-bold
+         text-white"
+        onClick={() => void signOut()}
+      >
+        Sign Out
+      </button>
+    </div>
   );
 };
 

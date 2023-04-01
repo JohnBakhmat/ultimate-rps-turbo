@@ -192,7 +192,7 @@ export const gameRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       await pusherServerClient.trigger(
-        `match-${input.matchId}`,
+        `lobby-${input.matchId}`,
         "player-ready",
         {
           playerId: input.playerId,
@@ -213,13 +213,13 @@ export const gameRouter = createTRPCRouter({
 });
 
 const setPlayerNotReady = async (matchId: string, playerId: string) => {
-  await pusherServerClient.trigger(`match-${matchId}`, "player-not-ready", {
+  await pusherServerClient.trigger(`lobby-${matchId}`, "player-not-ready", {
     playerId,
   });
 };
 
 const playerJoin = async (matchId: string, playerId: string) => {
-  await pusherServerClient.trigger(`match-${matchId}`, "player-join", {
+  await pusherServerClient.trigger(`lobby-${matchId}`, "player-join", {
     playerId,
   });
 };
