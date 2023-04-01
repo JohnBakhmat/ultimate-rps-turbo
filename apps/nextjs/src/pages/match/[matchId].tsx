@@ -5,6 +5,7 @@ import {
   type NextPage,
 } from "next";
 import Image from "next/image";
+import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 
 import { pusherServerClient } from "@acme/api/src/pusher";
@@ -96,6 +97,7 @@ const MatchPage: NextPage<Props> = (props) => {
   const channel = pusher.subscribe(`match-${props.match.id}`);
   const session = useSession();
   const user = session.data?.user;
+  const router = useRouter();
 
   const onNewRound = () => {
     setImReady(false);
@@ -169,13 +171,25 @@ const MatchPage: NextPage<Props> = (props) => {
       matchId: props.match.id,
     });
 
-    setUsedSigns((prev) => [...prev, sign]);
+    setUsedSigns((prev) => {
+      const newValue = [...prev, sign];
+
+      if (newValue.length > 3) {
+        newValue.shift();
+      }
+
+      return newValue;
+    });
   };
 
   const handleReset = () => {
     newMatch.mutate({
       matchId: props.match.id,
     });
+  };
+
+  const handleLeave = () => {
+    router.back();
   };
 
   const resultText = MatchResults[roundResult] || "";
@@ -199,15 +213,26 @@ const MatchPage: NextPage<Props> = (props) => {
               <SignButton sign={oponentSign as SignType} />
             </div>
 
-            <button
-              onClick={handleReset}
-              className="rounded-xl 
+            <div className="flex flex-row gap-5">
+              <button
+                onClick={handleReset}
+                className="rounded-xl 
                bg-gradient-to-br from-pink-500 to-purple-600 py-2 px-4 text-2xl
                 font-bold
                 text-white shadow-[0_0_40px_1px_#ec4899] disabled:opacity-50"
-            >
-              Next round
-            </button>
+              >
+                Next round
+              </button>
+              <button
+                onClick={handleLeave}
+                className=" 
+               rounded-xl bg-black py-2 px-4 text-2xl
+                font-bold
+                text-white shadow-[0_0_40px_1px_#ec4899] disabled:opacity-50"
+              >
+                Return to lobby
+              </button>
+            </div>
           </>
         )}
         <h1 className="text-5xl text-pink-500">{myWinCount}</h1>
