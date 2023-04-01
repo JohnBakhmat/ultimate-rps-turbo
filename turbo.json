@@ -1,47 +1,56 @@
 {
   "$schema": "https://turborepo.org/schema.json",
   "globalDependencies": ["**/.env"],
-  "pipeline": {
-    "db:generate": {
-      "inputs": ["prisma/schema.prisma"],
-      "cache": false
-    },
-    "db:push": {
-      "inputs": ["prisma/schema.prisma"],
-      "cache": false
-    },
-    "dev": {
-      "persistent": true,
-      "cache": false
-    },
-    "build": {
-      "dependsOn": ["^build", "^db:generate"],
-      "outputs": [".next/**"]
-    },
-    "lint": {},
-    "lint:fix": {},
-    "clean": {
-      "cache": false
-    },
-    "//#clean": {
-      "cache": false
-    },
-    "type-check": {
-      "dependsOn": ["^db:generate"],
-      "cache": false
-    }
-  },
   "globalEnv": [
     "CI",
     "DATABASE_URL",
     "DISCORD_CLIENT_ID",
     "DISCORD_CLIENT_SECRET",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
     "EXPO_ROUTER_APP_ROOT",
     "NEXTAUTH_SECRET",
     "NEXTAUTH_URL",
     "NODE_ENV",
     "SKIP_ENV_VALIDATION",
     "VERCEL",
-    "VERCEL_URL"
-  ]
+    "VERCEL_URL",
+    "PUSHER_APP_ID",
+    "NEXT_PUBLIC_PUSHER_APP_KEY",
+    "PUSHER_APP_SECRET",
+    "NEXT_PUBLIC_PUSHER_SERVER_HOST",
+    "NEXT_PUBLIC_PUSHER_SERVER_PORT",
+    "NEXT_PUBLIC_PUSHER_SERVER_TLS",
+    "NEXT_PUBLIC_PUSHER_SERVER_CLUSTER"
+  ],
+  "pipeline": {
+    "//#clean": {
+      "cache": false
+    },
+    "build": {
+      "dependsOn": ["^build", "^db:generate"],
+      "outputs": [".next/**"]
+    },
+    "clean": {
+      "cache": false
+    },
+    "db:generate": {
+      "cache": false,
+      "inputs": ["prisma/schema.prisma"]
+    },
+    "db:push": {
+      "cache": false,
+      "inputs": ["prisma/schema.prisma"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "lint": {},
+    "lint:fix": {},
+    "type-check": {
+      "cache": false,
+      "dependsOn": ["^db:generate"]
+    }
+  }
 }
