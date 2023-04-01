@@ -56,7 +56,7 @@ const Lobby: NextPage = () => {
     if (matchId.length > 0 && user?.id) {
       joinMatch.mutate({ matchId, playerId: user.id });
 
-      const channel = pusher.subscribe(`match-${matchId}`);
+      const channel = pusher.subscribe(`lobby-${matchId}`);
       channel.bind("player-join", onPlayerJoin);
       channel.bind("player-ready", onPlayerReady);
       channel.bind("player-not-ready", onPlayerNotReady);
