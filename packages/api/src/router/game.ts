@@ -57,18 +57,39 @@ export const gameRouter = createTRPCRouter({
     .input(
       z.object({
         matchId: z.string(),
+        playerId: z.string(),
       }),
     )
     .query(async ({ ctx, input }) => {
       const { matchId } = input;
 
-      const match = await ctx.prisma.match.findUnique({
+      const joinedTables = await ctx.prisma.userMatch.findMany({
         where: {
-          id: matchId,
+          matchId: matchId,
+        },
+        include: {
+          user: true,
+          match: true,
         },
       });
 
-      return match;
+      const match = joinedTables[0]?.match;
+      const opponent = joinedTables.find(
+        (i) => i.userId !== input.playerId,
+      )?.user;
+      const myData = joinedTables.find(
+        (i) => i.userId === input.playerId,
+      )?.user;
+
+      if (!match || !opponent || !myData) {
+        throw new Error("Match not found");
+      }
+
+      return {
+        match,
+        opponent,
+        myData,
+      };
     }),
 
   getMatchIdByPublicId: protectedProcedure
