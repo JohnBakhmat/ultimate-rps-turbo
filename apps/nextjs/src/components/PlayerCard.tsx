@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export type Props = {
   name?: string | null | undefined;
   email?: string | null | undefined;
@@ -22,10 +24,12 @@ export const PlayerCard = (props: Props) => {
           Ready!
         </h1>
 
-        <img
+        <Image
           src={image}
           alt="player image"
-          className={`aspect-square max-w-[100px] rounded-full ${
+          width={100}
+          height={100}
+          className={`aspect-square rounded-full ${
             ready ? "player-ready" : ""
           }`}
         />

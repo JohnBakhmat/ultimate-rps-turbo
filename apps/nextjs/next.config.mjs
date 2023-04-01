@@ -13,7 +13,12 @@ const config = {
   typescript: { ignoreBuildErrors: !!process.env.CI },
 
   images: {
-    domains: ["cdn.discordapp.com"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+    ],
   },
 };
 
