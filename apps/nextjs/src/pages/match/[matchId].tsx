@@ -298,3 +298,8 @@ const SignButton: FC<{
     </div>
   );
 };
+
+
+export const config = {
+    runtime:"experimental-edge",
+}

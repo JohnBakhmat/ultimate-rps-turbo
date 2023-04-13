@@ -60,3 +60,8 @@ const AuthShowcase: React.FC = () => {
     </div>
   );
 };
+
+
+export const config = {
+    runtime:"experimental-edge",
+}
