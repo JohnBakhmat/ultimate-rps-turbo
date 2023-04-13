@@ -238,7 +238,7 @@ const MatchPage: NextPage<Props> = (props) => {
         <h1 className="text-5xl text-pink-500">{myWinCount}</h1>
         <Player data={me} isReady={imReady} />
       </div>
-      <Modal isOpen={isModalOpen}>
+      <Modal isOpen={isModalOpen} isOponentReady={oponentReady}>
         <>
           {signs.map((s, i) => (
             <div key={`${s} ${i}`}>
@@ -255,17 +255,17 @@ const MatchPage: NextPage<Props> = (props) => {
   );
 };
 
-type ModalProps = { isOpen: boolean; children: React.ReactElement };
+type ModalProps = { isOpen: boolean; children: React.ReactElement; isOponentReady:boolean };
 
-const Modal: FC<ModalProps> = ({ isOpen, children }) => {
-  if (!isOpen) return <div />;
-
+const Modal: FC<ModalProps> = ({ isOpen, children, isOponentReady }) => {
   return (
-    <div className="fixed inset-0 z-20 grid place-items-center text-white">
+    <div className={"fixed inset-0 z-20 grid place-items-center text-white transition-all duration-300 ease-in-out " + (!isOpen&&"hidden")}>
       <div className="grid grid-cols-6 grid-rows-4 place-items-center gap-14">
         {children}
         <div className="col-span-4 col-start-2 row-span-2 row-start-2 text-6xl italic">
-          Pick a sign!
+          <h1>Pick a sign!</h1>
+          <p className="text-lg text-center">After you use it, sign needs to cool down!</p>
+          <p className="text-lg text-center text-orange-500">{isOponentReady?"Your oponent is ready!" :""}</p>
         </div>
       </div>
     </div>

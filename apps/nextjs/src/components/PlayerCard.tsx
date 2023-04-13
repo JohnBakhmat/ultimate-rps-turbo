@@ -14,8 +14,8 @@ export const PlayerCard = (props: Props) => {
   const name = props.name || "Super Duper Player";
   const ready = props.isReady;
   return (
-    <div className="aspect-square h-full w-full max-w-[300px] rounded-xl bg-gradient-to-br from-pink-500 to-purple-600 p-0.5 shadow-[0_0_40px_1px_#ec4899]">
-      <div className="grid h-full place-items-center gap-4 rounded-xl bg-black p-10">
+    <div className="aspect-square relative h-full w-full max-w-[250px] lg:max-w-[300px] rounded-xl bg-gradient-to-br from-pink-500 to-purple-600 p-0.5 shadow-[0_0_40px_1px_#ec4899]">
+      <div className="grid absolute inset-1 place-items-center gap-2 lg:gap-4 rounded-xl bg-black p-5 lg:p-10">
         <h1
           className={
             "font-sans text-3xl " + (ready ? "text-white" : "text-transparent")
@@ -29,11 +29,11 @@ export const PlayerCard = (props: Props) => {
           alt="player image"
           width={100}
           height={100}
-          className={`aspect-square rounded-full ${
+          className={`aspect-square rounded-full w-1/3 lg:w-2/4 ${
             ready ? "player-ready" : ""
           }`}
         />
-        <h1 className="text-center font-mono text-2xl">{name}</h1>
+        <h1 className="text-center font-mono text-xl lg:text-2xl">{name}</h1>
       </div>
     </div>
   );

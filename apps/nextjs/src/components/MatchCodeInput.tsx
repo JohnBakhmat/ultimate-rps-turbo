@@ -23,7 +23,7 @@ export const MatchCodeInput = ({
 
   return (
     <div
-      className={`relative grid
+      className={`relative grid xl:col-span-1 col-span-full 
       place-items-center rounded-md  p-1 text-2xl font-bold 
       ${
         isCopied

@@ -145,7 +145,8 @@ const Lobby: NextPage = () => {
           duration={5}
           onCountdownEnded={handleMatchStart}
         />
-        <div className="row-span-2 flex w-8/12 flex-col items-center justify-between gap-2 lg:w-8/12 lg:flex-row lg:gap-24">
+        <div className="row-span-2 flex w-full items-center justify-center">
+        <div className="2xl:w-9/12 xl:w-11/12 w-full flex gap-2 lg:gap-16 xl:gap-24">
           <PlayerCard
             name={name}
             image={image}
@@ -153,17 +154,17 @@ const Lobby: NextPage = () => {
             isReady={imReady}
           />
           <div className="flex-grow">
-            <div className="grid h-full grid-cols-3 grid-rows-4 gap-5">
+            <div className="grid h-full grid-cols-3 text-xl lg:text-2xl grid-rows-4 gap-5">
               <button
-                className="col-span-2 rounded-xl bg-gradient-to-br from-pink-500
-               to-purple-600 py-2 px-4 text-2xl font-bold text-white
+                className="xl:col-span-2 col-span-full rounded-xl bg-gradient-to-br from-pink-500
+               to-purple-600 py-2 px-4 
                 shadow-[0_0_40px_1px_#ec4899]
-                disabled:opacity-50
+                disabled:opacity-50 
                 "
                 disabled={matchId.length > 0}
                 onClick={handleCreateMatch}
               >
-                CreateMatch
+                Create Match
               </button>
 
               <MatchCodeInput
@@ -171,11 +172,9 @@ const Lobby: NextPage = () => {
                 publicId={publicId}
                 setPublicId={setPublicId}
               />
-
               <button
                 className="col-span-3 rounded-xl bg-gradient-to-br from-pink-500
-               to-purple-600 py-2 px-4 text-2xl font-bold text-white
-                shadow-[0_0_40px_1px_#ec4899]
+               to-purple-600 py-2 px-4 shadow-[0_0_40px_1px_#ec4899]
                 disabled:opacity-50
                 "
                 disabled={matchId.length > 0}
@@ -186,8 +185,7 @@ const Lobby: NextPage = () => {
 
               <button
                 className="col-span-3 row-start-4 rounded-xl bg-gradient-to-br
-               from-pink-500 to-purple-600 py-2 px-4 text-2xl font-bold
-                text-white
+               from-pink-500 to-purple-600 py-2 px-4 font-bold italic 
                 shadow-[0_0_40px_1px_#ec4899] disabled:opacity-50
                 "
                 disabled={!oponents || oponents.length <= 0}
@@ -210,6 +208,7 @@ const Lobby: NextPage = () => {
               />
             ))
           )}
+          </div>
         </div>
       </main>
 
