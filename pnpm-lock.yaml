@@ -89,6 +89,9 @@ importers:
       typescript: 4.9.5
       ws: 8.13.0
 
+  apps/server:
+    specifiers: {}
+
   packages/api:
     specifiers:
       '@acme/auth': '*'
